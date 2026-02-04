@@ -48,7 +48,7 @@ Consuming apps sum scores from all validations and track nullifiers to prevent r
             │
             ▼
 ┌───────────────────────────┐       ┌───────────────────────────┐
-│  BringID CredentialRegistry│       │  EIP-8004 Identity Registry│
+│ BringID CredentialRegistry│       │ EIP-8004 Identity Registry│
 │        (Semaphore)        │       │        (ERC-721)          │
 │                           │       │                           │
 │  • validateProof()        │       │  • setApprovalForAll()    │
