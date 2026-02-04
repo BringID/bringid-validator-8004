@@ -1,0 +1,52 @@
+{
+  "name": "@bringid/validator8004",
+  "version": "0.1.0",
+  "description": "SDK for querying BringID Validator for EIP-8004 agents",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BringID/bringid-validator-8004.git",
+    "directory": "sdk"
+  },
+  "keywords": [
+    "bringid",
+    "eip-8004",
+    "sybil-resistance",
+    "identity",
+    "ethereum"
+  ],
+  "author": "BringID",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/BringID/bringid-validator-8004/issues"
+  },
+  "homepage": "https://github.com/BringID/bringid-validator-8004#readme",
+  "peerDependencies": {
+    "viem": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "viem": "^2.0.0"
+  }
+}

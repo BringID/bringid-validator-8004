@@ -206,27 +206,31 @@ async function registerWithSybilResistance() {
 
 ### For Clients (Querying Agent Score)
 
+Install the SDK:
+
+```bash
+npm install @bringid/validator8004 viem
+```
+
+Query agent scores:
+
 ```typescript
-async function getAgentScore(agentId: number) {
-  const validationRegistry = new ethers.Contract(VALIDATION_REGISTRY, VALIDATION_ABI, provider);
+import { createPublicClient, http } from "viem";
+import { mainnet } from "viem/chains";
+import { Validator8004Client } from "@bringid/validator8004";
 
-  const requestHashes = await validationRegistry.getAgentValidations(agentId);
+const client = createPublicClient({
+  chain: mainnet,
+  transport: http(),
+});
 
-  let totalScore = 0;
-  const nullifiers: string[] = [];
+const validator8004 = new Validator8004Client(client, {
+  validationRegistry: VALIDATION_REGISTRY,
+  bringIdValidator: BRINGID_VALIDATOR,
+});
 
-  for (const hash of requestHashes) {
-    const [validator, , response, responseHash, tag] =
-      await validationRegistry.getValidationStatus(hash);
-
-    if (validator === BRINGID_VALIDATOR && tag === "bringid-operator-humanity") {
-      totalScore += response;
-      nullifiers.push(responseHash);  // nullifier for Sybil tracking
-    }
-  }
-
-  return { totalScore, nullifiers };
-}
+// Get score and nullifiers for an agent
+const { totalScore, nullifiers } = await validator8004.getAgentScore(BigInt(agentId));
 ```
 
 ## Registration File

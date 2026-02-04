@@ -16,3 +16,7 @@ out/
 # Coverage
 lcov.info
 coverage/
+
+# SDK build artifacts
+sdk/node_modules/
+sdk/dist/

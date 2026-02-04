@@ -347,29 +347,32 @@ async function submitSingleCredential(agentId: number, proof: CredentialGroupPro
 
 ### For Clients (Querying Agent Score)
 
+Use the `@bringid/validator8004` SDK to query agent scores:
+
 ```typescript
-async function getAgentScore(agentId: number) {
-  const validationRegistry = new ethers.Contract(VALIDATION_REGISTRY, VALIDATION_ABI, provider);
-  
-  // Get all validations for this agent
-  const requestHashes = await validationRegistry.getAgentValidations(agentId);
-  
-  let totalScore = 0;
-  const nullifiers: string[] = [];
-  
-  for (const hash of requestHashes) {
-    // getValidationStatus returns responseHash (nullifier) directly
-    const [validator, , response, responseHash, tag, lastUpdate] = 
-      await validationRegistry.getValidationStatus(hash);
-    
-    if (validator === BRINGID_VALIDATOR && tag === "bringid-operator-humanity") {
-      totalScore += response;
-      nullifiers.push(responseHash);  // nullifier for Sybil tracking
-    }
-  }
-  
-  return { totalScore, nullifiers };
-}
+import { createPublicClient, http } from "viem";
+import { mainnet } from "viem/chains";
+import { Validator8004Client } from "@bringid/validator8004";
+
+const client = createPublicClient({
+  chain: mainnet,
+  transport: http(),
+});
+
+const validator8004 = new Validator8004Client(client, {
+  validationRegistry: "0x...",  // EIP-8004 Validation Registry
+  bringIdValidator: "0x...",    // BringID Validator contract
+});
+
+// Get agent score and nullifiers
+const { totalScore, nullifiers, validations } = await validator8004.getAgentScore(
+  BigInt(agentId)
+);
+
+// Optional: filter by max age (e.g., 30 days)
+const recentResult = await validator8004.getAgentScore(BigInt(agentId), {
+  maxAge: BigInt(30 * 24 * 60 * 60),
+});
 ```
 
 ---
@@ -566,48 +569,64 @@ contract SybilResistantAirdrop {
 
 ### Off-Chain Verification
 
-Consuming apps can verify BringID proofs off-chain:
+Consuming apps can verify BringID proofs off-chain using the SDK:
 
 ```typescript
-import { BringID, CredentialGroupProof } from "bringid";
-import { ethers } from "ethers";
+import { createPublicClient, http } from "viem";
+import { mainnet } from "viem/chains";
+import { Validator8004Client, CredentialRegistryAbi } from "@bringid/validator8004";
+import type { CredentialGroupProof } from "@bringid/validator8004";
+import { BringID } from "bringid";
+
+const client = createPublicClient({
+  chain: mainnet,
+  transport: http(),
+});
+
+const CREDENTIAL_REGISTRY = "0x...";
 
 async function verifyAgentOffchain(
-  agentId: number,
+  agentId: bigint,
   proofs: CredentialGroupProof[],
   minScore: number
 ): Promise<{ valid: boolean; score: number; nullifiers: bigint[] }> {
   const bringid = new BringID();
-  const provider = new ethers.JsonRpcProvider(RPC_URL);
-  const credentialRegistry = new ethers.Contract(
-    CREDENTIAL_REGISTRY,
-    CREDENTIAL_REGISTRY_ABI,
-    provider
-  );
-  
+
   let totalScore = 0;
   const nullifiers: bigint[] = [];
-  
+
   for (const proof of proofs) {
     // Verify Semaphore proof off-chain
     const isValid = await bringid.verifyProofOffchain(proof);
     if (!isValid) {
       return { valid: false, score: 0, nullifiers: [] };
     }
-    
-    // Check credential group is active and get score
-    const isActive = await credentialRegistry.credentialGroupIsActive(proof.credentialGroupId);
+
+    // Check credential group is active
+    const isActive = await client.readContract({
+      address: CREDENTIAL_REGISTRY,
+      abi: CredentialRegistryAbi,
+      functionName: "credentialGroupIsActive",
+      args: [proof.credentialGroupId],
+    });
     if (!isActive) continue;
-    
-    const groupScore = await credentialRegistry.credentialGroupScore(proof.credentialGroupId);
+
+    // Get score for this credential group
+    const groupScore = await client.readContract({
+      address: CREDENTIAL_REGISTRY,
+      abi: CredentialRegistryAbi,
+      functionName: "credentialGroupScore",
+      args: [proof.credentialGroupId],
+    });
+
     totalScore += Number(groupScore);
     nullifiers.push(proof.semaphoreProof.nullifier);
   }
-  
+
   return {
     valid: totalScore >= minScore,
     score: totalScore,
-    nullifiers
+    nullifiers,
   };
 }
 ```

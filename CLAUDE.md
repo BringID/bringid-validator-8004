@@ -61,8 +61,30 @@ test/
     ├── MockValidationRegistry.sol
     └── MockCredentialRegistry.sol
 
+sdk/                              # @bringid/validator8004 TypeScript SDK
+├── src/
+│   ├── index.ts                  # Main exports
+│   ├── client.ts                 # Validator8004Client class
+│   ├── types.ts                  # TypeScript types
+│   └── abi.ts                    # Contract ABIs
+├── package.json
+└── tsconfig.json
+
 docs/
 └── SPEC.md                       # Full specification
+```
+
+## SDK Commands
+
+```bash
+# Install SDK dependencies
+cd sdk && npm install
+
+# Build SDK
+npm run build
+
+# Typecheck
+npm run typecheck
 ```
 
 ## Key Dependencies
