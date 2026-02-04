@@ -2,21 +2,98 @@
 
 A validator contract that integrates BringID's privacy-preserving identity verification with EIP-8004 Trustless Agents, enabling Sybil resistance for AI agents by proving the uniqueness of the human operator behind each agent.
 
+> **Full Specification**: See [docs/SPEC.md](docs/SPEC.md) for the complete technical specification.
+
 ## Overview
 
-The `BringIDValidator8004` contract:
+**The core approach**: Each BringID credential becomes a separate EIP-8004 validation:
+- `response` = credential score (0-100)
+- `responseHash` = nullifier (for Sybil tracking)
 
-1. Accepts BringID credential proofs from agent operators
-2. Validates proofs via BringID's CredentialRegistry (Semaphore-based)
-3. Submits validation requests and responses to EIP-8004's Validation Registry atomically
-4. Stores nullifiers in `responseHash` for Sybil tracking by consuming apps
+Consuming apps sum scores from all validations and track nullifiers to prevent reuse across agents. No new EIP-8004 contracts or interfaces are required.
 
-### Key Design Decisions
+## Architecture
 
-- **Atomic execution**: Both `validationRequest()` and `validationResponse()` are called in a single transaction
-- **Operator approval**: Requires agent owner to approve the validator as an operator on Identity Registry via `setApprovalForAll()`
-- **Proof encoding**: The contract encodes proofs as base64 data URIs for `requestURI`, computes `requestHash = keccak256(requestURI)`
-- **Context = agentId**: Same human can verify different agents, but cannot reuse credentials for the same agent
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      EIP-8004 Validation Registry                       │
+│                                                                         │
+│  validationRequest(validator, agentId, requestURI, requestHash)         │
+│  validationResponse(requestHash, response, "", responseHash, tag)       │
+│                                                                         │
+│  getValidationStatus() returns:                                         │
+│    (validatorAddress, agentId, response, responseHash, tag, lastUpdate) │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+              ▲                 ▲                     │
+              │                 │                     │
+     validationRequest   validationResponse    getValidationStatus()
+       (per proof)         (per proof)         getAgentValidations()
+              └────────┬────────┘                     │
+                       │ (atomic)                     │
+┌──────────────────────┴──────────┐       ┌───────────▼───────────────────┐
+│     BringID Validator           │       │     Consuming Apps            │
+│                                 │       │                               │
+│  validate(agentId, proof)       │       │  • Query validations          │
+│  validateBatch(agentId, proofs) │       │  • Sum scores (response)      │
+│                                 │       │  • Track nullifiers           │
+│  Per proof (atomic):            │       │    (responseHash)             │
+│  1. Validate proof              │       │                               │
+│  2. Get credential score        │       │                               │
+│  3. Encode proof → requestURI   │       │                               │
+│  4. Call validationRequest      │       │                               │
+│  5. Call validationResponse     │       │                               │
+│                                 │       │                               │
+└───────────┬─────────────────────┘       └───────────────────────────────┘
+            │
+            ▼
+┌───────────────────────────┐       ┌───────────────────────────┐
+│  BringID CredentialRegistry│       │  EIP-8004 Identity Registry│
+│        (Semaphore)        │       │        (ERC-721)          │
+│                           │       │                           │
+│  • validateProof()        │       │  • setApprovalForAll()    │
+│  • credentialGroupScore() │       │    (approve validator)    │
+│  • Nullifier tracking     │       │                           │
+└───────────────────────────┘       └───────────────────────────┘
+```
+
+## How It Works
+
+### Step 1: Operator Verifies Credentials via BringID
+
+The operator proves control of real web accounts (GitHub, Uber, Airbnb, etc.) using BringID verification. Each verified account belongs to a credential group with an associated score and Semaphore proof.
+
+### Step 2: Approve Validator as Operator (One-Time)
+
+The agent owner approves the BringIDValidator contract as an operator on the Identity Registry:
+
+```solidity
+identityRegistry.setApprovalForAll(bringIdValidator, true);
+```
+
+### Step 3: Submit Validations (Atomic)
+
+Submit all credentials in a single transaction:
+
+```solidity
+// Submit all proofs atomically - if any fails, entire transaction reverts
+bringIdValidator.validateBatch(agentId, proofs);
+
+// Or submit one at a time
+bringIdValidator.validate(agentId, proof);
+```
+
+### Step 4: Consuming Apps Query Validations
+
+Apps use EIP-8004's `getValidationStatus()` to get scores AND nullifiers directly:
+
+```solidity
+bytes32[] memory hashes = validationRegistry.getAgentValidations(agentId);
+
+(address validator, uint256 agentId, uint8 response, bytes32 responseHash, string memory tag, uint256 lastUpdate)
+    = validationRegistry.getValidationStatus(requestHash);
+// responseHash = nullifier for Sybil tracking
+```
 
 ## Project Structure
 
@@ -34,7 +111,9 @@ bringid-validator-8004/
 │       └── MockCredentialRegistry.sol
 ├── script/
 │   └── Deploy.s.sol                  # Deployment scripts
-├── foundry.toml                      # Foundry configuration
+├── docs/
+│   └── SPEC.md                       # Full specification
+├── foundry.toml
 └── README.md
 ```
 
@@ -47,11 +126,8 @@ bringid-validator-8004/
 ### Setup
 
 ```bash
-# Clone the repository
-git clone <repository-url>
+git clone https://github.com/BringID/bringid-validator-8004.git
 cd bringid-validator-8004
-
-# Install dependencies
 forge install
 ```
 
@@ -69,9 +145,6 @@ forge test
 
 # Run tests with verbosity
 forge test -vvv
-
-# Run specific test
-forge test --match-test test_Validate_WithValidProof
 
 # Run with gas reporting
 forge test --gas-report
@@ -95,51 +168,81 @@ CREDENTIAL_REGISTRY=<bringid-credential-registry-address>
 ### Deploy
 
 ```bash
-# Load environment variables
 source .env
-
-# Deploy to a network (e.g., Sepolia)
 forge script script/Deploy.s.sol:Deploy --rpc-url $RPC_URL --broadcast --verify
 ```
 
-## Usage
+## Integration Examples
 
-### Prerequisites
+### For Agent Operators (TypeScript)
 
-Before using the validator, the agent owner must approve the validator contract as an operator on the EIP-8004 Identity Registry:
+```typescript
+import { BringID } from "bringid";
+import { ethers } from "ethers";
 
-```solidity
-identityRegistry.setApprovalForAll(validatorAddress, true);
+async function registerWithSybilResistance() {
+  const bringid = new BringID();
+  const signer = await getSigner();
+
+  // 1. Generate credential proofs off-chain
+  const proofs = await bringid.generateProofs();
+
+  // 2. Register agent via EIP-8004 Identity Registry (ERC-721)
+  const identityRegistry = new ethers.Contract(IDENTITY_REGISTRY, IDENTITY_ABI, signer);
+  const tx = await identityRegistry.register("ipfs://Qm...");
+  const receipt = await tx.wait();
+  const agentId = parseAgentId(receipt);
+
+  // 3. Approve BringIDValidator as operator (one-time)
+  await identityRegistry.setApprovalForAll(BRINGID_VALIDATOR, true);
+
+  // 4. Submit all validations in one transaction (atomic)
+  const bringidValidator = new ethers.Contract(BRINGID_VALIDATOR, BRINGID_ABI, signer);
+  await bringidValidator.validateBatch(agentId, proofs);
+
+  return agentId;
+}
 ```
 
-### Validating a Single Credential
+### For Clients (Querying Agent Score)
 
-```solidity
-// Create proof (obtained from BringID SDK)
-ICredentialRegistry.CredentialGroupProof memory proof = ICredentialRegistry.CredentialGroupProof({
-    credentialGroupId: 1,
-    semaphoreProof: ISemaphore.SemaphoreProof({
-        merkleTreeDepth: 20,
-        merkleTreeRoot: <root>,
-        nullifier: <nullifier>,
-        message: <message>,
-        scope: <scope>,
-        points: [<proof-points>]
-    })
-});
+```typescript
+async function getAgentScore(agentId: number) {
+  const validationRegistry = new ethers.Contract(VALIDATION_REGISTRY, VALIDATION_ABI, provider);
 
-// Validate
-validator.validate(agentId, proof);
+  const requestHashes = await validationRegistry.getAgentValidations(agentId);
+
+  let totalScore = 0;
+  const nullifiers: string[] = [];
+
+  for (const hash of requestHashes) {
+    const [validator, , response, responseHash, tag] =
+      await validationRegistry.getValidationStatus(hash);
+
+    if (validator === BRINGID_VALIDATOR && tag === "bringid-operator-humanity") {
+      totalScore += response;
+      nullifiers.push(responseHash);  // nullifier for Sybil tracking
+    }
+  }
+
+  return { totalScore, nullifiers };
+}
 ```
 
-### Validating Multiple Credentials
+## Registration File
 
-```solidity
-ICredentialRegistry.CredentialGroupProof[] memory proofs = new ICredentialRegistry.CredentialGroupProof[](2);
-proofs[0] = proof1;
-proofs[1] = proof2;
+Agents with BringID verification should include `"bringid-operator-humanity"` in their `supportedTrust` array:
 
-validator.validateBatch(agentId, proofs);
+```json
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "MyTradingAgent",
+  "description": "DeFi strategy executor with verified operator",
+  "supportedTrust": [
+    "reputation",
+    "bringid-operator-humanity"
+  ]
+}
 ```
 
 ## Contract Interface
@@ -150,19 +253,11 @@ validator.validateBatch(agentId, proofs);
 
 Validates a single BringID credential and submits to EIP-8004.
 
-- **agentId**: The agent being verified
-- **proof**: The credential group proof from BringID
-
 #### `validateBatch(uint256 agentId, CredentialGroupProof[] calldata proofs)`
 
-Validates multiple BringID credentials atomically.
-
-- **agentId**: The agent being verified
-- **proofs**: Array of credential group proofs
+Validates multiple BringID credentials atomically. If any proof fails, the entire transaction reverts.
 
 ### Events
-
-#### `OperatorHumanityVerified`
 
 ```solidity
 event OperatorHumanityVerified(
@@ -174,26 +269,28 @@ event OperatorHumanityVerified(
 );
 ```
 
-Emitted when an operator's humanity is successfully verified.
-
 ## Security Considerations
 
-1. **Nullifier Uniqueness**: The CredentialRegistry ensures each nullifier can only be used once per context (agentId), preventing credential reuse for the same agent.
+1. **Atomic Execution**: Both `validate()` and `validateBatch()` are atomic. For batch operations, if any proof fails validation, the entire transaction reverts.
 
-2. **Score Capping**: Credential scores are capped at 100 to comply with EIP-8004 response format.
+2. **Operator Approval**: Agent owners must approve the BringIDValidator as an operator on the Identity Registry.
 
-3. **Atomic Execution**: Both validation request and response are submitted in the same transaction, ensuring consistency.
+3. **Proof Auditability**: Each proof is encoded as a base64 data URI (`requestURI`) with `requestHash = keccak256(requestURI)`.
 
-4. **Operator Approval**: The contract requires explicit operator approval on the Identity Registry, ensuring only authorized validators can submit validations.
+4. **Nullifier Tracking**: BringID's CredentialRegistry handles nullifier tracking globally. The same human always produces the same nullifier (per credential group + context).
 
-## Gas Optimization
+5. **Nullifier in responseHash**: The nullifier is stored in EIP-8004's `responseHash` field, queryable via `getValidationStatus()`.
 
-Batch validation is more gas-efficient per proof than individual validations due to amortized fixed costs:
+6. **Validation Age**: Apps should check `lastUpdate` from `getValidationStatus()` and may reject stale validations.
 
-| Operation | Gas per Proof |
-|-----------|---------------|
-| Single `validate()` | ~305,000 |
-| `validateBatch()` (5 proofs) | ~262,000 |
+7. **Privacy Preservation**: BringID verification happens off-chain. Only scores and nullifiers are stored on-chain.
+
+## References
+
+- [EIP-8004: Trustless Agents](https://eips.ethereum.org/EIPS/eip-8004)
+- [BringID CredentialRegistry](https://github.com/BringID/identity-registry)
+- [BringID SDK](https://github.com/bringID/bringid)
+- [Semaphore Protocol](https://semaphore.pse.dev/)
 
 ## License
 
