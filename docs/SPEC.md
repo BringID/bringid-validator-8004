@@ -36,11 +36,11 @@ No new EIP-8004 contracts or interfaces are required.
 ┌──────────────────────┴──────────┐       ┌───────────▼───────────────────┐
 │     BringID Validator           │       │     Consuming Apps            │
 │                                 │       │                               │
-│  validate(agentId,      │       │  • Query validations          │
-│                   proof)        │       │  • Sum scores (response)      │
+│  validate(agentId, proof)       │       │  • Query validations          │
+│                                 │       │  • Sum scores (response)      │
 │                                 │       │  • Track nullifiers           │
-│  validateBatch(agentId, │       │    (responseHash)             │
-│                        proofs[])│       │                               │
+│  validateBatch(agentId,proofs[])│       │    (responseHash)             │
+│                                 │       │                               │
 │                                 │       │                               │
 │  Per proof (atomic):            │       │                               │
 │  1. Validate proof              │       │                               │
@@ -53,7 +53,7 @@ No new EIP-8004 contracts or interfaces are required.
             │
             ▼
 ┌───────────────────────────┐       ┌───────────────────────────┐
-│  BringID CredentialRegistry│       │  EIP-8004 Identity Registry│
+│ BringID CredentialRegistry│       │ EIP-8004 Identity Registry│
 │        (Semaphore)        │       │        (ERC-721)          │
 │                           │       │                           │
 │  • validateProof()        │       │  • setApprovalForAll()    │
