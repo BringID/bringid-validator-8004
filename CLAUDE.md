@@ -74,23 +74,33 @@ docs/
 └── SPEC.md                       # Full specification
 ```
 
-## SDK Commands
+## SDK (@bringid/validator8004)
 
+TypeScript SDK for querying BringID validations from EIP-8004 Validation Registry.
+
+**Key class**: `Validator8004Client`
+- `getAgentScore(agentId, options?)`: Returns `{ totalScore, nullifiers, validations }`
+- `hasNullifier(agentId, nullifier)`: Check if nullifier is associated with agent
+- `getValidationDetails(requestHash)`: Get details for specific validation
+
+**Commands**:
 ```bash
-# Install SDK dependencies
-cd sdk && npm install
-
-# Build SDK
-npm run build
-
-# Typecheck
-npm run typecheck
+cd sdk && npm install   # Install dependencies
+npm run build           # Build SDK
+npm run typecheck       # Typecheck
 ```
+
+**Peer dependency**: `viem ^2.0.0`
 
 ## Key Dependencies
 
+**Solidity**:
 - OpenZeppelin Contracts (Base64 encoding)
 - forge-std (testing)
+
+**SDK**:
+- viem (Ethereum client)
+- tsup (build)
 
 ## Important Notes
 
@@ -99,3 +109,4 @@ npm run typecheck
 - requestURI format: `data:application/octet-stream;base64,<encoded(proof)>`
 - requestHash: `keccak256(requestURI)`
 - Nullifier is constant per credential (same human = same nullifier regardless of agent)
+- One credential = one agent: nullifier can only be used once globally (context=0)
