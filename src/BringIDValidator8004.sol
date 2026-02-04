@@ -78,10 +78,12 @@ contract BringIDValidator8004 {
         uint256 agentId,
         ICredentialRegistry.CredentialGroupProof calldata proof
     ) internal {
-        // Validate proof via BringID CredentialRegistry first
-        // Context = agentId, so same human can verify different agents
-        uint256 context = agentId;
-        credentialRegistry.validateProof(context, proof);
+        // Prevent frontrunning: proof must commit to this specific agentId
+        require(proof.semaphoreProof.message == agentId, "Proof not for this agent");
+
+        // Validate proof via BringID CredentialRegistry
+        // Context = 0 (constant) ensures one credential can only be used for one agent ever
+        credentialRegistry.validateProof(0, proof);
 
         // Get score for this credential group
         uint256 score = credentialRegistry.credentialGroupScore(proof.credentialGroupId);
@@ -92,9 +94,8 @@ contract BringIDValidator8004 {
         // Nullifier for Sybil tracking
         bytes32 nullifier = bytes32(proof.semaphoreProof.nullifier);
 
-        // Encode agentId and proof as base64 data URI for requestURI
-        // Including agentId ensures unique requestHash per agent even with same proof
-        bytes memory proofData = abi.encode(agentId, proof);
+        // Encode proof as base64 data URI for requestURI
+        bytes memory proofData = abi.encode(proof);
         string memory requestURI = string(
             abi.encodePacked(DATA_URI_PREFIX, Base64.encode(proofData))
         );

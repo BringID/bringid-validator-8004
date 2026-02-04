@@ -184,14 +184,14 @@ async function registerWithSybilResistance() {
   const bringid = new BringID();
   const signer = await getSigner();
 
-  // 1. Generate credential proofs off-chain
-  const proofs = await bringid.generateProofs();
-
-  // 2. Register agent via EIP-8004 Identity Registry (ERC-721)
+  // 1. Register agent via EIP-8004 Identity Registry (ERC-721)
   const identityRegistry = new ethers.Contract(IDENTITY_REGISTRY, IDENTITY_ABI, signer);
   const tx = await identityRegistry.register("ipfs://Qm...");
   const receipt = await tx.wait();
   const agentId = parseAgentId(receipt);
+
+  // 2. Generate credential proofs with agentId as message (frontrun protection)
+  const proofs = await bringid.generateProofs({ message: agentId });
 
   // 3. Approve BringIDValidator as operator (one-time)
   await identityRegistry.setApprovalForAll(BRINGID_VALIDATOR, true);
@@ -271,19 +271,21 @@ event OperatorHumanityVerified(
 
 ## Security Considerations
 
-1. **Atomic Execution**: Both `validate()` and `validateBatch()` are atomic. For batch operations, if any proof fails validation, the entire transaction reverts.
+1. **Frontrunning Protection**: The Semaphore proof's `message` field must equal the `agentId`. This cryptographically binds each proof to a specific agent, preventing attackers from stealing proofs from the mempool and using them for different agents.
 
-2. **Operator Approval**: Agent owners must approve the BringIDValidator as an operator on the Identity Registry.
+2. **One Credential = One Agent**: Each credential (nullifier) can only be used for one agent ever. The CredentialRegistry uses `context=0` (constant) for global nullifier tracking.
 
-3. **Proof Auditability**: Each proof is encoded as a base64 data URI (`requestURI`) with `requestHash = keccak256(requestURI)`.
+3. **Atomic Execution**: Both `validate()` and `validateBatch()` are atomic. For batch operations, if any proof fails validation, the entire transaction reverts.
 
-4. **Nullifier Tracking**: BringID's CredentialRegistry handles nullifier tracking globally. The same human always produces the same nullifier (per credential group + context).
+4. **Operator Approval**: Agent owners must approve the BringIDValidator as an operator on the Identity Registry.
 
-5. **Nullifier in responseHash**: The nullifier is stored in EIP-8004's `responseHash` field, queryable via `getValidationStatus()`.
+5. **Proof Auditability**: Each proof is encoded as a base64 data URI (`requestURI`) with `requestHash = keccak256(requestURI)`.
 
-6. **Validation Age**: Apps should check `lastUpdate` from `getValidationStatus()` and may reject stale validations.
+6. **Nullifier in responseHash**: The nullifier is stored in EIP-8004's `responseHash` field, queryable via `getValidationStatus()`. Consuming apps can track nullifiers across their platform.
 
-7. **Privacy Preservation**: BringID verification happens off-chain. Only scores and nullifiers are stored on-chain.
+7. **Validation Age**: Apps should check `lastUpdate` from `getValidationStatus()` and may reject stale validations.
+
+8. **Privacy Preservation**: BringID verification happens off-chain. Only scores and nullifiers are stored on-chain.
 
 ## References
 

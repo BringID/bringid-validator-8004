@@ -14,7 +14,13 @@ BringID Validator for EIP-8004 - A Solidity smart contract that integrates Bring
   - Calls both `validationRequest()` and `validationResponse()` in single transaction
   - Stores nullifier in `responseHash` for Sybil tracking
 
-- **Context = agentId**: Same human can verify different agents, but cannot reuse credentials for the same agent
+- **One credential = one agent**: Each credential (nullifier) can only ever be used for one agent
+  - CredentialRegistry uses `context=0` (constant), so nullifier can only be used once globally
+  - Consuming apps track nullifiers via `responseHash` to detect same human across apps
+
+- **Frontrunning protection**: `proof.semaphoreProof.message` must equal `agentId`
+  - Proof is cryptographically bound to specific agent
+  - Prevents attackers from stealing proofs from mempool
 
 - **Score capping**: Credential scores > 100 are capped to 100 for EIP-8004 compliance
 
@@ -50,7 +56,7 @@ src/
     └── ICredentialRegistry.sol   # BringID interface
 
 test/
-├── BringIDValidator8004.t.sol    # Tests (28 tests, 100% coverage)
+├── BringIDValidator8004.t.sol    # Tests (29 tests, 100% coverage)
 └── mocks/
     ├── MockValidationRegistry.sol
     └── MockCredentialRegistry.sol
@@ -68,5 +74,6 @@ docs/
 
 - Requires operator approval: `identityRegistry.setApprovalForAll(validator, true)`
 - Tag used: `"bringid-operator-humanity"`
-- requestURI format: `data:application/octet-stream;base64,<encoded(agentId, proof)>`
+- requestURI format: `data:application/octet-stream;base64,<encoded(proof)>`
 - requestHash: `keccak256(requestURI)`
+- Nullifier is constant per credential (same human = same nullifier regardless of agent)

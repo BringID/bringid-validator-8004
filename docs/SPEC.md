@@ -255,11 +255,13 @@ contract BringIDValidator {
         uint256 agentId,
         ICredentialRegistry.CredentialGroupProof calldata proof
     ) internal {
-        // Validate proof via BringID CredentialRegistry first
-        // Context = agentId, so same human can verify different agents
-        uint256 context = agentId;
-        credentialRegistry.validateProof(context, proof);
-        
+        // Prevent frontrunning: proof must commit to this specific agentId
+        require(proof.semaphoreProof.message == agentId, "Proof not for this agent");
+
+        // Validate proof via BringID CredentialRegistry
+        // Context = 0 (constant) ensures one credential can only be used for one agent ever
+        credentialRegistry.validateProof(0, proof);
+
         // Get score for this credential group
         uint256 score = credentialRegistry.credentialGroupScore(proof.credentialGroupId);
         
@@ -614,21 +616,23 @@ async function verifyAgentOffchain(
 
 ## Security Considerations
 
-1. **Atomic Execution**: Both `validate()` and `validateBatch()` are atomic. For batch operations, if any proof fails validation, the entire transaction reverts and no requests are registered.
+1. **Frontrunning Protection**: The Semaphore proof's `message` field must equal the `agentId`. The validator enforces `require(proof.semaphoreProof.message == agentId)`. This cryptographically binds each proof to a specific agent, preventing attackers from stealing proofs from the mempool and using them for different agents.
 
-2. **Operator Approval**: Agent owners must approve the BringIDValidator as an operator on the Identity Registry. This is a one-time setup per agent owner.
+2. **One Credential = One Agent**: Each credential (nullifier) can only be used for one agent ever. The CredentialRegistry uses `context=0` (constant) for global nullifier tracking, ensuring a credential cannot be reused across multiple agents.
 
-3. **Proof Auditability**: The validator encodes each proof as a base64 data URI (`requestURI`) and computes `requestHash = keccak256(requestURI)`. Both are emitted in the `ValidationRequest` event for off-chain auditability.
+3. **Atomic Execution**: Both `validate()` and `validateBatch()` are atomic. For batch operations, if any proof fails validation, the entire transaction reverts and no requests are registered.
 
-4. **Nullifier Tracking**: BringID's CredentialRegistry handles nullifier tracking globally. The same human always produces the same nullifier (per credential group + context), preventing credential reuse.
+4. **Operator Approval**: Agent owners must approve the BringIDValidator as an operator on the Identity Registry. This is a one-time setup per agent owner.
 
-5. **Nullifier in responseHash**: The nullifier is stored in EIP-8004's `responseHash` field, queryable via `getValidationStatus()`. Consuming apps can track which nullifiers have been used for their specific use case (e.g., airdrop claims).
+5. **Proof Auditability**: The validator encodes each proof as a base64 data URI (`requestURI`) and computes `requestHash = keccak256(requestURI)`. Both are emitted in the `ValidationRequest` event for off-chain auditability.
 
-6. **Validation Age**: Apps should check `lastUpdate` from `getValidationStatus()` and may reject stale validations.
+6. **Nullifier in responseHash**: The nullifier is stored in EIP-8004's `responseHash` field, queryable via `getValidationStatus()`. Consuming apps can track which nullifiers have been used for their specific use case (e.g., airdrop claims).
 
-7. **Validator Trust**: The BringID validator address should be well-known. Apps verify they're querying validations from the legitimate validator.
+7. **Validation Age**: Apps should check `lastUpdate` from `getValidationStatus()` and may reject stale validations.
 
-8. **Privacy Preservation**: BringID's MPC-TLS verification happens off-chain. Only scores and nullifiers are stored on-chain.
+8. **Validator Trust**: The BringID validator address should be well-known. Apps verify they're querying validations from the legitimate validator.
+
+9. **Privacy Preservation**: BringID's MPC-TLS verification happens off-chain. Only scores and nullifiers are stored on-chain.
 
 ---
 
