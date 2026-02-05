@@ -3,6 +3,8 @@
 A validator contract that integrates BringID's privacy-preserving identity verification with EIP-8004 Trustless Agents, enabling Sybil resistance for AI agents by proving the uniqueness of the human operator behind each agent.
 
 > **Full Specification**: See [docs/SPEC.md](docs/SPEC.md) for the complete technical specification.
+>
+> **About BringID**: See [docs/bringid-technical-overview.md](docs/bringid-technical-overview.md) for how BringID verification works.
 
 ## Overview
 
@@ -294,6 +296,8 @@ event OperatorHumanityVerified(
 ## References
 
 - [EIP-8004: Trustless Agents](https://eips.ethereum.org/EIPS/eip-8004)
+- [BringID Technical Overview](docs/bringid-technical-overview.md)
+- [BringID Whitepaper](https://github.com/BringID/whitepaper/blob/main/whitepaper.md)
 - [BringID CredentialRegistry](https://github.com/BringID/identity-registry)
 - [BringID SDK](https://github.com/bringID/bringid)
 - [Semaphore Protocol](https://semaphore.pse.dev/)

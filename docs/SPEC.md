@@ -594,6 +594,8 @@ contract SybilResistantAirdrop {
 ## References
 
 - [EIP-8004: Trustless Agents](https://eips.ethereum.org/EIPS/eip-8004)
+- [BringID Technical Overview](bringid-technical-overview.md)
+- [BringID Whitepaper](https://github.com/BringID/whitepaper/blob/main/whitepaper.md)
 - [BringID CredentialRegistry](https://github.com/BringID/identity-registry)
 - [BringID SDK](https://github.com/bringID/bringid)
 - [Semaphore Protocol](https://semaphore.pse.dev/)
