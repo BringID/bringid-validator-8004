@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-const COPY_TEXT = "Read https://8004.bringid.org/SKILL.md and follow the instructions to verify your humanity.";
+const COPY_TEXT = "Read https://8004.bringid.org/skill.md and follow the instructions to verify your humanity.";
 
 export function SkillMdBlock() {
   const [copied, setCopied] = useState(false);
@@ -24,7 +24,7 @@ export function SkillMdBlock() {
             </span>
           </div>
           <a
-            href="/SKILL.md"
+            href="/skill.md"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-blue-400 hover:text-blue-300"
