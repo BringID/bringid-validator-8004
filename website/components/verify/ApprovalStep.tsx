@@ -8,6 +8,7 @@ import {
 } from "wagmi";
 import { useEffect } from "react";
 import { identityRegistryAbi, getContracts } from "@/lib/contracts";
+import { getBlockExplorerUrl } from "@/lib/chains";
 
 interface ApprovalStepProps {
   chainId: number;
@@ -81,6 +82,7 @@ export function ApprovalStep({
   };
 
   const isWaiting = isWriting || isConfirming;
+  const explorerUrl = txHash ? getBlockExplorerUrl(chainId, txHash) : null;
 
   return (
     <div className="text-center">
@@ -91,26 +93,51 @@ export function ApprovalStep({
       </p>
 
       {isCheckingApproval && (
-        <div className="flex justify-center">
+        <div className="flex flex-col items-center gap-2">
           <Spinner />
+          <p className="text-gray-500 text-sm">Checking approval status...</p>
         </div>
       )}
 
-      {!isCheckingApproval && !isApproved && (
+      {!isCheckingApproval && !isApproved && !isWaiting && (
         <button
           onClick={handleApprove}
-          disabled={isWaiting}
-          className="px-6 py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-400 transition-colors"
         >
-          {isWaiting ? (
-            <span className="flex items-center gap-2">
-              <Spinner />
-              {isConfirming ? "Confirming..." : "Approving..."}
-            </span>
-          ) : (
-            "Approve Validator"
-          )}
+          Approve Validator
         </button>
+      )}
+
+      {isWaiting && (
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex items-center gap-3">
+            <Spinner />
+            <span className="text-gray-300">
+              {isWriting ? "Waiting for wallet..." : "Confirming transaction..."}
+            </span>
+          </div>
+
+          {txHash && (
+            <div className="mt-2 p-4 bg-gray-800 rounded-lg w-full max-w-md">
+              <p className="text-gray-500 text-xs mb-1">Transaction Hash</p>
+              <div className="flex items-center gap-2">
+                <code className="text-sm text-gray-300 truncate flex-1">
+                  {txHash}
+                </code>
+                {explorerUrl && (
+                  <a
+                    href={explorerUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400 hover:text-blue-300 text-sm whitespace-nowrap"
+                  >
+                    View →
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       {isApproved && (
@@ -124,6 +151,6 @@ export function ApprovalStep({
 
 function Spinner() {
   return (
-    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+    <div className="w-5 h-5 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
   );
 }
