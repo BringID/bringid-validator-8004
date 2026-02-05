@@ -31,7 +31,7 @@ export function VerifyStep({ agentId, chainId, onComplete, onError }: VerifyStep
         keccak256(
           encodeAbiParameters(
             [{ type: "address" }, { type: "uint256" }],
-            [contracts.bringIdValidator, 0n]
+            [contracts.bringIdValidator, BigInt(0)]
           )
         )
       ).toString()
