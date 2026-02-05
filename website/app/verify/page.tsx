@@ -120,6 +120,7 @@ function VerifyContent() {
           {step === 4 && (
             <VerifyStep
               agentId={agentId}
+              chainId={chainId}
               onComplete={(newProofs, newPoints) => {
                 setProofs(newProofs);
                 setPoints(newPoints);

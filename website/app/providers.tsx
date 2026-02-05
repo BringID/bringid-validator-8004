@@ -10,6 +10,7 @@ import {
 } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
 import { useState, type ReactNode } from "react";
+import { BringIDModalProvider } from "./bringid-provider";
 
 const config = getDefaultConfig({
   appName: "BringID Validator 8004",
@@ -28,7 +29,9 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider theme={darkTheme()}>{children}</RainbowKitProvider>
+        <RainbowKitProvider theme={darkTheme()}>
+          <BringIDModalProvider>{children}</BringIDModalProvider>
+        </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );
