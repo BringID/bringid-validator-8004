@@ -1,259 +1,128 @@
-# Skill: Verify Operator Humanity
+# Verify Your Agent's Humanity via BringID
 
-This guide describes how an EIP-8004 agent can verify the humanity of its operator using BringID credentials.
+You are an EIP-8004 agent. Your operator (the human who owns you) can prove they are a real human by verifying through BringID. This gives you a sybil-resistance score that other agents and apps can trust.
 
-## Overview
+## What This Does
 
-BringID provides privacy-preserving identity verification using zero-knowledge proofs. Each verified credential (GitHub, Uber, Airbnb, etc.) has an associated score. The total score indicates the operator's humanity level.
+- Your operator verifies real-world credentials through BringID — this includes OAuth-linked accounts (X, GitHub, Farcaster), MPC-TLS verified services (Binance KYC, Apple subscriptions), and identity protocols (zkPassport, Self). Each verification method maps to a separate Semaphore group.
+- Each verified credential adds to your humanity score (0–100 per credential)
+- The score and a nullifier are recorded on-chain in the EIP-8004 Validation Registry
+- Other agents and apps can query your score to confirm a real human is behind you
+- One credential = one agent. Your operator's credentials cannot be reused for another agent.
 
-## Prerequisites
+## Verification Flow
 
-- Agent registered on EIP-8004 Identity Registry (you have an `agentId`)
-- Operator has verified credentials via BringID
-- BringID SDK installed: `npm install bringid`
+When your operator asks to verify your humanity, follow these steps:
 
-## Step 1: Generate Credential Proofs
+### Step 1: Collect Agent ID
 
-The operator generates Semaphore proofs for their verified credentials:
+You need your EIP-8004 `agentId` (the token ID from the Identity Registry). If you don't already know it, ask your operator.
 
-```typescript
-import { BringID } from "bringid";
+### Step 2: Send Operator to the Verification Page
 
-const bringid = new BringID();
+Direct your operator to:
 
-// Generate proofs with agentId as message (frontrun protection)
-const proofs = await bringid.generateProofs({
-  message: agentId,  // Binds proofs to this specific agent
-});
+```
+https://8004.bringid.org/verify?agentId={AGENT_ID}
 ```
 
-**Important**: The `message` field must equal the `agentId`. This cryptographically binds each proof to your agent, preventing attackers from stealing proofs.
+Replace `{AGENT_ID}` with the actual numeric agent ID.
 
-## Step 2: Approve BringID Validator (One-Time)
+For Base Sepolia testnet, use:
 
-The agent owner must approve the BringIDValidator contract as an operator:
-
-```typescript
-import { createWalletClient, http } from "viem";
-import { mainnet } from "viem/chains";
-
-const IDENTITY_REGISTRY = "0x...";
-const BRINGID_VALIDATOR = "0x...";
-
-const walletClient = createWalletClient({
-  chain: mainnet,
-  transport: http(),
-});
-
-// One-time approval
-await walletClient.writeContract({
-  address: IDENTITY_REGISTRY,
-  abi: [
-    {
-      name: "setApprovalForAll",
-      type: "function",
-      inputs: [
-        { name: "operator", type: "address" },
-        { name: "approved", type: "bool" },
-      ],
-      outputs: [],
-    },
-  ],
-  functionName: "setApprovalForAll",
-  args: [BRINGID_VALIDATOR, true],
-});
+```
+https://8004.bringid.org/verify?agentId={AGENT_ID}&chain=84532
 ```
 
-## Step 3: Submit Validations
+The default chain is Base Mainnet (8453).
 
-Submit all credential proofs in a single atomic transaction:
+Tell your operator something like:
 
-```typescript
-const BRINGID_VALIDATOR = "0x...";
+> To verify your humanity, please go to this link: https://8004.bringid.org/verify?agentId={AGENT_ID}
+>
+> You'll need to:
+> 1. Connect the wallet that owns this agent
+> 2. Approve the BringID validator (one-time transaction)
+> 3. Verify your accounts through BringID
+> 4. Submit the proofs on-chain
+>
+> Once done, come back and let me know.
 
-// Submit all proofs atomically
-await walletClient.writeContract({
-  address: BRINGID_VALIDATOR,
-  abi: [
-    {
-      name: "validateBatch",
-      type: "function",
-      inputs: [
-        { name: "agentId", type: "uint256" },
-        {
-          name: "proofs",
-          type: "tuple[]",
-          components: [
-            { name: "credentialGroupId", type: "uint256" },
-            {
-              name: "semaphoreProof",
-              type: "tuple",
-              components: [
-                { name: "merkleTreeDepth", type: "uint256" },
-                { name: "merkleTreeRoot", type: "uint256" },
-                { name: "nullifier", type: "uint256" },
-                { name: "message", type: "uint256" },
-                { name: "scope", type: "uint256" },
-                { name: "points", type: "uint256[8]" },
-              ],
-            },
-          ],
-        },
-      ],
-      outputs: [],
-    },
-  ],
-  functionName: "validateBatch",
-  args: [agentId, proofs],
-});
-```
+### Step 3: Confirm Verification
 
-If any proof fails, the entire transaction reverts.
+After your operator says they completed verification, check on-chain by querying the EIP-8004 Validation Registry.
 
-## Step 4: Query Your Score
-
-After submission, verify the validations were recorded:
+**Using the `@bringid/validator8004` SDK (recommended):**
 
 ```typescript
 import { createPublicClient, http } from "viem";
+import { base } from "viem/chains";
 import { Validator8004Client } from "@bringid/validator8004";
 
-const client = createPublicClient({
-  chain: mainnet,
+const publicClient = createPublicClient({
+  chain: base,
   transport: http(),
 });
 
-const validator8004 = new Validator8004Client(client, {
-  validationRegistry: "0x...",
-  bringIdValidator: "0x...",
+const validator = new Validator8004Client(publicClient, {
+  validationRegistry: "VALIDATION_REGISTRY_ADDRESS",
+  bringIdValidator: "BRINGID_VALIDATOR_ADDRESS",
 });
 
-const { totalScore, nullifiers } = await validator8004.getAgentScore(
-  BigInt(agentId)
+const { totalScore, validations } = await validator.getAgentScore(
+  BigInt(AGENT_ID)
 );
 
-console.log(`Operator humanity score: ${totalScore}`);
+if (totalScore > 0) {
+  // Operator humanity verified
+}
 ```
 
-## Step 5: Advertise in Registration File
+**Using direct contract call:**
 
-Update your agent's registration file to advertise BringID support:
+```typescript
+const requestHashes = await publicClient.readContract({
+  address: "VALIDATION_REGISTRY_ADDRESS",
+  abi: validationRegistryAbi,
+  functionName: "getAgentValidations",
+  args: [BigInt(AGENT_ID)],
+});
+
+// If requestHashes.length > 0, the agent has BringID validations
+```
+
+If the score is 0 or no validations exist, the operator hasn't completed verification yet.
+
+### Step 4: Report Result
+
+Let your operator know the outcome:
+
+- **Verified**: "Your humanity has been verified. Your agent now has a BringID score of {SCORE}. Other agents and apps can see this verification on-chain."
+- **Not yet verified**: "I couldn't find your verification on-chain yet. Please make sure you completed all steps at the verification link. The transaction may still be confirming — try again in a minute."
+
+## Contract Addresses
+
+| Contract | Base Mainnet (8453) | Base Sepolia (84532) |
+|---|---|---|
+| BringID Validator | `TBD` | `TBD` |
+| Validation Registry (EIP-8004) | `TBD` | `TBD` |
+| Identity Registry (EIP-8004) | `TBD` | `TBD` |
+
+## Advertising Verification
+
+Once verified, your registration file (agentURI) should include `"bringid-operator-humanity"` in `supportedTrust`:
 
 ```json
 {
-  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
-  "name": "MyAgent",
-  "description": "Agent with verified human operator",
-  "supportedTrust": [
-    "bringid-operator-humanity"
-  ]
+  "supportedTrust": ["bringid-operator-humanity"]
 }
 ```
 
-## Complete Example
+This signals to other agents and consuming apps that your operator has completed BringID humanity verification.
 
-```typescript
-import { BringID } from "bringid";
-import { createPublicClient, createWalletClient, http } from "viem";
-import { mainnet } from "viem/chains";
-import { privateKeyToAccount } from "viem/accounts";
-import { Validator8004Client } from "@bringid/validator8004";
+## Important Notes
 
-const IDENTITY_REGISTRY = "0x...";
-const VALIDATION_REGISTRY = "0x...";
-const BRINGID_VALIDATOR = "0x...";
-
-async function verifyOperatorHumanity(agentId: bigint) {
-  const bringid = new BringID();
-  const account = privateKeyToAccount("0x...");
-
-  const walletClient = createWalletClient({
-    account,
-    chain: mainnet,
-    transport: http(),
-  });
-
-  const publicClient = createPublicClient({
-    chain: mainnet,
-    transport: http(),
-  });
-
-  // 1. Generate proofs bound to this agent
-  const proofs = await bringid.generateProofs({
-    message: agentId,
-  });
-
-  if (proofs.length === 0) {
-    throw new Error("No verified credentials found");
-  }
-
-  // 2. Approve validator (skip if already approved)
-  await walletClient.writeContract({
-    address: IDENTITY_REGISTRY,
-    abi: [{
-      name: "setApprovalForAll",
-      type: "function",
-      inputs: [
-        { name: "operator", type: "address" },
-        { name: "approved", type: "bool" },
-      ],
-      outputs: [],
-    }],
-    functionName: "setApprovalForAll",
-    args: [BRINGID_VALIDATOR, true],
-  });
-
-  // 3. Submit validations
-  await walletClient.writeContract({
-    address: BRINGID_VALIDATOR,
-    abi: [{
-      name: "validateBatch",
-      type: "function",
-      inputs: [
-        { name: "agentId", type: "uint256" },
-        { name: "proofs", type: "tuple[]", components: [
-          { name: "credentialGroupId", type: "uint256" },
-          { name: "semaphoreProof", type: "tuple", components: [
-            { name: "merkleTreeDepth", type: "uint256" },
-            { name: "merkleTreeRoot", type: "uint256" },
-            { name: "nullifier", type: "uint256" },
-            { name: "message", type: "uint256" },
-            { name: "scope", type: "uint256" },
-            { name: "points", type: "uint256[8]" },
-          ]},
-        ]},
-      ],
-      outputs: [],
-    }],
-    functionName: "validateBatch",
-    args: [agentId, proofs],
-  });
-
-  // 4. Verify submission
-  const validator8004 = new Validator8004Client(publicClient, {
-    validationRegistry: VALIDATION_REGISTRY,
-    bringIdValidator: BRINGID_VALIDATOR,
-  });
-
-  const { totalScore } = await validator8004.getAgentScore(agentId);
-  console.log(`Verification complete. Total score: ${totalScore}`);
-
-  return totalScore;
-}
-```
-
-## Key Constraints
-
-| Constraint | Description |
-|------------|-------------|
-| One credential = one agent | Each nullifier can only be used once globally |
-| Frontrun protection | Proof must have `message == agentId` |
-| Atomic execution | Batch fails entirely if any proof invalid |
-| Score cap | Individual scores capped at 100 |
-
-## References
-
-- [Full Specification](docs/SPEC.md)
-- [SDK Documentation](sdk/README.md)
-- [BringID SDK](https://github.com/bringID/bringid)
-- [EIP-8004](https://eips.ethereum.org/EIPS/eip-8004)
+- **Privacy**: BringID uses MPC-TLS — no personal data is stored on-chain. Only scores and nullifiers are public.
+- **One credential per agent**: Each verified account can only be linked to one agent globally. Your operator cannot reuse the same credentials for a different agent.
+- **Frontrunning protection**: Proofs are cryptographically bound to your specific agentId and cannot be intercepted or reused.
+- **Operator approval**: Your operator must approve the BringID Validator contract as an operator on the Identity Registry. The verification page handles this automatically.
