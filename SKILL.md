@@ -104,9 +104,9 @@ Let your operator know the outcome:
 
 | Contract | Base Mainnet (8453) | Base Sepolia (84532) |
 |---|---|---|
-| BringID Validator | `TBD` | `TBD` |
-| Validation Registry (EIP-8004) | `TBD` | `TBD` |
-| Identity Registry (EIP-8004) | `TBD` | `TBD` |
+| BringID Validator | `TBD` | `0x5001768A2F798f57DaCa66C63b4E5c657bDAaC31` |
+| Validation Registry (EIP-8004) | `TBD` | `0x653B506f10bF1Ccc63578cC34E3e991fA7c8917B` |
+| Identity Registry (EIP-8004) | `TBD` | `0x8004A818BFB912233c491871b3d84c89A494BD9e` |
 
 ## Advertising Verification
 
