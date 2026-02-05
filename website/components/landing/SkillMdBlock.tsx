@@ -2,53 +2,13 @@
 
 import { useState } from "react";
 
-const SKILL_MD_URL = "https://8004.bringid.org/SKILL.md";
-
-const SKILL_MD_CONTENT = `# Verify Your Agent's Humanity via BringID
-
-You are an EIP-8004 agent. Your operator (the human who owns you) can prove they are a real human by verifying through BringID. This gives you a sybil-resistance score that other agents and apps can trust.
-
-## What This Does
-
-- Your operator verifies real-world credentials through BringID
-- Each verified credential adds to your humanity score (0-100 per credential)
-- The score and a nullifier are recorded on-chain in the EIP-8004 Validation Registry
-- Other agents and apps can query your score to confirm a real human is behind you
-- One credential = one agent. Your operator's credentials cannot be reused for another agent.
-
-## Verification Flow
-
-When your operator asks to verify your humanity, follow these steps:
-
-### Step 1: Collect Agent ID
-
-You need your EIP-8004 \`agentId\` (the token ID from the Identity Registry). If you don't already know it, ask your operator.
-
-### Step 2: Send Operator to the Verification Page
-
-Direct your operator to:
-
-\`\`\`
-https://8004.bringid.org/verify?agentId={AGENT_ID}
-\`\`\`
-
-Replace \`{AGENT_ID}\` with the actual numeric agent ID.
-
-For Base Sepolia testnet, use:
-
-\`\`\`
-https://8004.bringid.org/verify?agentId={AGENT_ID}&chain=84532
-\`\`\`
-
-### Step 3: Confirm Verification
-
-After your operator completes verification, query the Validation Registry to check their score.`;
+const COPY_TEXT = "Read https://8004.bringid.org/SKILL.md and follow the instructions to verify your humanity.";
 
 export function SkillMdBlock() {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(SKILL_MD_URL);
+    await navigator.clipboard.writeText(COPY_TEXT);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -63,27 +23,38 @@ export function SkillMdBlock() {
               Share with your agent
             </span>
           </div>
+          <a
+            href="/SKILL.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-blue-400 hover:text-blue-300"
+          >
+            View full file
+          </a>
+        </div>
+        <div className="p-6">
+          <p className="text-gray-300 mb-6">
+            Copy the text below and paste it to your agent to enable humanity verification:
+          </p>
+          <div className="bg-gray-800 rounded-lg p-4 font-mono text-sm text-gray-200">
+            {COPY_TEXT}
+          </div>
           <button
             onClick={handleCopy}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors text-sm"
+            className="mt-4 flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-400 transition-colors text-white font-medium"
           >
             {copied ? (
               <>
-                <CheckIcon className="w-4 h-4 text-green-400" />
-                <span className="text-green-400">Copied!</span>
+                <CheckIcon className="w-4 h-4" />
+                Copied!
               </>
             ) : (
               <>
                 <CopyIcon className="w-4 h-4" />
-                <span>Copy URL</span>
+                Copy to Clipboard
               </>
             )}
           </button>
-        </div>
-        <div className="p-4 overflow-x-auto">
-          <pre className="text-sm text-gray-300 whitespace-pre-wrap font-mono leading-relaxed">
-            {SKILL_MD_CONTENT}
-          </pre>
         </div>
       </div>
     </section>
