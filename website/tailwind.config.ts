@@ -8,7 +8,18 @@ const config: Config = {
   ],
   darkMode: "class",
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "monospace"],
+      },
+      colors: {
+        accent: "#ffd12f",
+        surface: "#0a0a0a",
+        "surface-raised": "#111111",
+        "surface-border": "#222222",
+      },
+    },
   },
   plugins: [],
 };
