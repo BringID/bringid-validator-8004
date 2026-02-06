@@ -3,15 +3,15 @@
 const details = [
   {
     title: "Multi-credential",
-    desc: "X, GitHub, Farcaster, Binance KYC, zkPassport \u2014 use what you have. Each adds to the score.",
+    desc: "X, GitHub, Farcaster, Binance KYC, zkPassport \u2014 each adds to the score. More credentials = harder to fake.",
+  },
+  {
+    title: "1:1 binding",
+    desc: "One credential = one agent. Proofs cryptographically bound to agentId. Can\u2019t be reused, split, or frontrun.",
   },
   {
     title: "Private",
-    desc: "MPC-TLS proofs. No personal data on-chain. Only scores and nullifiers.",
-  },
-  {
-    title: "Sybil-resistant",
-    desc: "One credential = one agent. Proofs cryptographically bound to agentId. Can\u2019t be reused or frontrun.",
+    desc: "MPC-TLS proofs. No personal data on-chain. Only scores and nullifiers. The service knows you\u2019re unique \u2014 not who you are.",
   },
   {
     title: "Native EIP-8004",

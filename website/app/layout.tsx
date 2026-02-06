@@ -14,9 +14,9 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BringID \u00d7 8004 \u2014 Humanity verification for the agent economy",
+  title: "BringID \u00d7 8004 \u2014 Sybil resistance for the agent economy",
   description:
-    "One attacker can spin up a thousand agents. BringID lets services tell which ones have real humans behind them \u2014 and lets agent owners prove it.",
+    "One attacker can spin up a thousand agents, drain your faucet, flood your API, and game your reputation system. BringID enforces one credential per agent \u2014 on-chain, private, unforgeable.",
 };
 
 export default function RootLayout({

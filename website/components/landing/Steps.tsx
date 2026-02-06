@@ -1,9 +1,9 @@
 "use client";
 
 const steps = [
-  "Agent owner verifies credentials through BringID \u2014 X, GitHub, Farcaster, Binance KYC, zkPassport",
-  "Humanity score and nullifier recorded on-chain in the EIP-8004 Validation Registry",
-  "Services query the score with one contract read \u2014 no API keys, no trust assumptions",
+  "Agent owner verifies credentials through BringID \u2014 X, GitHub, Farcaster, Binance KYC, zkPassport. Each credential binds to one agent only.",
+  "Score and nullifier recorded on-chain in the EIP-8004 Validation Registry. Credentials can\u2019t be reused for another agent.",
+  "Services query the score with one contract read \u2014 no API keys, no trust assumptions. Zero score = unverified.",
 ];
 
 export function Steps() {
