@@ -10,14 +10,17 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "monospace"],
       },
       colors: {
         accent: "#ffd12f",
+        "accent-dim": "rgba(255, 209, 47, 0.15)",
         surface: "#0a0a0a",
         "surface-raised": "#111111",
         "surface-border": "#222222",
+        dim: "#888888",
+        fg: "#e8e8e8",
       },
     },
   },

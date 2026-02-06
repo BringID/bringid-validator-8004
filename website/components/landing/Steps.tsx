@@ -1,23 +1,23 @@
 "use client";
 
 const steps = [
-  "Copy the skill to your agent (or visit /verify directly)",
-  "Connect wallet, pick credentials, verify through BringID",
-  "Humanity score recorded in the EIP-8004 Validation Registry",
+  "Agent owner verifies credentials through BringID \u2014 X, GitHub, Farcaster, Binance KYC, zkPassport",
+  "Humanity score and nullifier recorded on-chain in the EIP-8004 Validation Registry",
+  "Services query the score with one contract read \u2014 no API keys, no trust assumptions",
 ];
 
 export function Steps() {
   return (
-    <section className="max-w-3xl mx-auto px-6 py-16">
-      <h2 className="text-2xl font-bold mb-8">How it works</h2>
-      <ol className="space-y-4">
-        {steps.map((step, i) => (
-          <li key={i} className="flex gap-4 text-sm">
-            <span className="font-mono text-accent">{i + 1}.</span>
-            <span className="text-neutral-400">{step}</span>
-          </li>
+    <section className="landing-section">
+      <div className="section-header">How it works</div>
+      <div className="steps">
+        {steps.map((text, i) => (
+          <div key={i} className="step">
+            <div className="step-num">{i + 1}</div>
+            <div className="step-text">{text}</div>
+          </div>
         ))}
-      </ol>
+      </div>
     </section>
   );
 }

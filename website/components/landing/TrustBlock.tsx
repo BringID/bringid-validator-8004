@@ -2,30 +2,33 @@
 
 const details = [
   {
-    label: "Multi-credential",
-    text: "X, GitHub, Farcaster, Binance KYC, zkPassport -- use what you have.",
+    title: "Multi-credential",
+    desc: "X, GitHub, Farcaster, Binance KYC, zkPassport \u2014 use what you have. Each adds to the score.",
   },
   {
-    label: "Private",
-    text: "MPC-TLS proofs. No personal data on-chain. Only scores and nullifiers.",
+    title: "Private",
+    desc: "MPC-TLS proofs. No personal data on-chain. Only scores and nullifiers.",
   },
   {
-    label: "Sybil-resistant",
-    text: "One credential = one agent. Proofs cryptographically bound to your agentId.",
+    title: "Sybil-resistant",
+    desc: "One credential = one agent. Proofs cryptographically bound to agentId. Can\u2019t be reused or frontrun.",
+  },
+  {
+    title: "Native EIP-8004",
+    desc: "Lives in the Validation Registry. No sidecars, no extra infra. Query it like any other validation.",
   },
 ];
 
 export function TrustBlock() {
   return (
-    <section className="max-w-3xl mx-auto px-6 py-16">
-      <h2 className="text-sm font-bold text-neutral-600 uppercase tracking-wider mb-6">
-        The details
-      </h2>
-      <div className="space-y-4">
+    <section className="landing-section">
+      <div className="section-header">The details</div>
+      <div className="details-list">
         {details.map((d) => (
-          <p key={d.label} className="text-sm text-neutral-400">
-            <span className="text-white font-bold">{d.label}.</span> {d.text}
-          </p>
+          <div key={d.title} className="detail">
+            <div className="detail-title">{d.title}</div>
+            <div className="detail-desc">{d.desc}</div>
+          </div>
         ))}
       </div>
     </section>
