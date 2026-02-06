@@ -87,7 +87,7 @@ export function ApprovalStep({
   return (
     <div className="text-center">
       <h2 className="text-2xl font-bold mb-4">Approve Validator</h2>
-      <p className="text-gray-400 mb-8">
+      <p className="text-neutral-400 mb-8">
         The BringID Validator needs approval to record validations for your
         agent.
       </p>
@@ -95,14 +95,14 @@ export function ApprovalStep({
       {isCheckingApproval && (
         <div className="flex flex-col items-center gap-2">
           <Spinner />
-          <p className="text-gray-500 text-sm">Checking approval status...</p>
+          <p className="text-neutral-500 text-sm">Checking approval status...</p>
         </div>
       )}
 
       {!isCheckingApproval && !isApproved && !isWaiting && (
         <button
           onClick={handleApprove}
-          className="px-6 py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-400 transition-colors"
+          className="px-6 py-3 bg-accent text-black font-medium hover:bg-yellow-300"
         >
           Approve Validator
         </button>
@@ -112,16 +112,16 @@ export function ApprovalStep({
         <div className="flex flex-col items-center gap-4">
           <div className="flex items-center gap-3">
             <Spinner />
-            <span className="text-gray-300">
+            <span className="text-neutral-300">
               {isWriting ? "Waiting for wallet..." : "Confirming transaction..."}
             </span>
           </div>
 
           {txHash && (
-            <div className="mt-2 p-4 bg-gray-800 rounded-lg w-full max-w-md">
-              <p className="text-gray-500 text-xs mb-1">Transaction Hash</p>
+            <div className="mt-2 p-4 bg-[#0a0a0a] border border-surface-border w-full max-w-md">
+              <p className="text-neutral-600 text-xs mb-1 font-mono">Transaction Hash</p>
               <div className="flex items-center gap-2">
-                <code className="text-sm text-gray-300 truncate flex-1">
+                <code className="text-sm text-neutral-300 font-mono truncate flex-1">
                   {txHash}
                 </code>
                 {explorerUrl && (
@@ -129,9 +129,9 @@ export function ApprovalStep({
                     href={explorerUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-400 hover:text-blue-300 text-sm whitespace-nowrap"
+                    className="text-accent hover:text-yellow-300 text-sm whitespace-nowrap"
                   >
-                    View →
+                    View &rarr;
                   </a>
                 )}
               </div>
@@ -141,8 +141,8 @@ export function ApprovalStep({
       )}
 
       {isApproved && (
-        <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
-          <p className="text-green-400">Validator is approved!</p>
+        <div className="p-4 bg-accent/10 border border-accent/30">
+          <p className="text-accent">Validator is approved.</p>
         </div>
       )}
     </div>
@@ -151,6 +151,6 @@ export function ApprovalStep({
 
 function Spinner() {
   return (
-    <div className="w-5 h-5 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+    <div className="w-5 h-5 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
   );
 }

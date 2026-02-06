@@ -94,15 +94,15 @@ export function SubmitStep({
   return (
     <div className="text-center">
       <h2 className="text-2xl font-bold mb-4">Submit Proofs On-Chain</h2>
-      <p className="text-gray-400 mb-6">
+      <p className="text-neutral-400 mb-6">
         Submit your verified credentials to the blockchain.
       </p>
 
-      <div className="mb-8 p-4 bg-gray-900 rounded-lg border border-gray-800">
-        <div className="text-lg font-semibold text-white mb-2">
+      <div className="mb-8 p-4 bg-[#0a0a0a] border border-surface-border">
+        <div className="text-sm font-medium text-neutral-400 mb-2">
           {proofs.length} Credential{proofs.length !== 1 ? "s" : ""} Verified
         </div>
-        <div className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+        <div className="text-3xl font-bold font-mono text-accent">
           {points} Points
         </div>
       </div>
@@ -110,7 +110,7 @@ export function SubmitStep({
       <button
         onClick={handleSubmit}
         disabled={isWaiting}
-        className="px-6 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="px-6 py-3 bg-accent text-black font-medium hover:bg-yellow-300 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isWaiting ? (
           <span className="flex items-center justify-center gap-2">
@@ -123,7 +123,7 @@ export function SubmitStep({
       </button>
 
       {txHash && !isConfirmed && (
-        <p className="mt-4 text-sm text-gray-500">
+        <p className="mt-4 text-sm text-neutral-500">
           Transaction submitted. Waiting for confirmation...
         </p>
       )}
@@ -133,6 +133,6 @@ export function SubmitStep({
 
 function Spinner() {
   return (
-    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+    <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
   );
 }
