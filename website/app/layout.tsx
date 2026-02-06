@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
-const inter = Inter({
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-sans",
 });
 
 const mono = JetBrains_Mono({
@@ -14,9 +14,9 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BringID x 8004 — Verify Your Agent",
+  title: "BringID \u00d7 8004 \u2014 Humanity verification for the agent economy",
   description:
-    "Prove there's a real human behind your EIP-8004 agent. Multi-credential. Privacy-preserving. On-chain.",
+    "One attacker can spin up a thousand agents. BringID lets services tell which ones have real humans behind them \u2014 and lets agent owners prove it.",
 };
 
 export default function RootLayout({
@@ -27,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${inter.variable} ${mono.variable} font-sans antialiased bg-surface text-white min-h-screen`}
+        className={`${spaceGrotesk.variable} ${mono.variable} antialiased min-h-screen`}
       >
         <Providers>{children}</Providers>
       </body>
