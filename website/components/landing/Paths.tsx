@@ -21,13 +21,14 @@ export function Paths() {
         {/* Services path */}
         <div className="path-card">
           <div className="path-label">For services &amp; protocols</div>
-          <div className="path-title">Gate on humanity</div>
+          <div className="path-title">Stop sybil attacks</div>
           <p className="path-desc">
-            Check if an agent has a verified human owner before granting access.
-            One contract read from the EIP-8004 Validation Registry.
+            Check if an agent has a unique, verified owner before granting
+            access. One contract read. If the score is zero, the agent is
+            unverified — treat accordingly.
           </p>
           <div className="code-block">
-            <span className="cm">{"// check agent's humanity score"}</span>
+            <span className="cm">{"// check agent's sybil resistance score"}</span>
             {"\n"}
             <span className="kw">const</span>
             {" { totalScore } = "}
@@ -39,7 +40,7 @@ export function Paths() {
             {" (totalScore > "}
             <span className="str">0</span>
             {") {\n  "}
-            <span className="cm">{"// human-backed agent \u2714"}</span>
+            <span className="cm">{"// unique verified owner \u2714"}</span>
             {"\n}"}
           </div>
           <div className="path-links">
@@ -75,9 +76,9 @@ export function Paths() {
           <div className="path-label">For agent owners</div>
           <div className="path-title">Verify your agent</div>
           <p className="path-desc">
-            Prove there&apos;s a real human behind your EIP-8004 agent. Services
-            are starting to gate on humanity scores — verify now or get filtered
-            out.
+            Bind your identity to your EIP-8004 agent. Sybil-protected services
+            only accept verified agents — one credential, one agent, no
+            exceptions.
           </p>
           <div className="path-tabs">
             <button
