@@ -5,7 +5,7 @@ export function Hero() {
     <section className="hero">
       <h1>
         Sybil resistance for<br />
-        the <span className="accent">agent economy</span>
+        <span className="accent">AI agents</span>
       </h1>
       <p className="subtitle">
         One attacker can spin up a thousand agents, drain your faucet, flood
