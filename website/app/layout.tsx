@@ -14,7 +14,7 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BringID \u00d7 8004 \u2014 Sybil resistance for AI agents",
+  title: "BringID \u00d7 8004 \u2014 Sybil resistance for the agentic web",
   description:
     "One attacker can spin up a thousand agents, drain your faucet, flood your API, and game your reputation system. BringID enforces one credential per agent \u2014 on-chain, private, unforgeable.",
 };

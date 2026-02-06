@@ -4,8 +4,9 @@ export function Hero() {
   return (
     <section className="hero">
       <h1>
-        Sybil resistance for<br />
-        <span className="accent">AI agents</span>
+        Sybil resistance for the <span className="accent">agentic web.</span>
+        <br />
+        <span className="hero-qualifier">Powered by BringID. Native to EIP-8004.</span>
       </h1>
       <p className="subtitle">
         One attacker can spin up a thousand agents, drain your faucet, flood
