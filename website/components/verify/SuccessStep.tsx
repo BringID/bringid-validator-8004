@@ -19,21 +19,21 @@ export function SuccessStep({
 
   return (
     <div className="text-center">
-      <div className="w-16 h-16 mx-auto mb-6 bg-green-500 rounded-full flex items-center justify-center">
-        <CheckIcon className="w-8 h-8 text-white" />
+      <div className="w-16 h-16 mx-auto mb-6 bg-accent flex items-center justify-center">
+        <CheckIcon className="w-8 h-8 text-black" />
       </div>
 
-      <h2 className="text-2xl font-bold mb-4">Verification Complete!</h2>
-      <p className="text-gray-400 mb-8">
+      <h2 className="text-2xl font-bold mb-4">Verification Complete</h2>
+      <p className="text-neutral-400 mb-8">
         Your agent&apos;s humanity has been verified on-chain.
       </p>
 
-      <div className="mb-8 p-6 bg-gray-900 rounded-lg border border-gray-800">
-        <div className="text-sm text-gray-500 mb-1">Agent #{agentId.toString()}</div>
-        <div className="text-4xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
+      <div className="mb-8 p-6 bg-[#0a0a0a] border border-surface-border">
+        <div className="text-sm text-neutral-500 font-mono mb-1">Agent #{agentId.toString()}</div>
+        <div className="text-4xl font-bold font-mono text-accent">
           {points} Points
         </div>
-        <div className="text-sm text-gray-500 mt-2">Humanity Score</div>
+        <div className="text-sm text-neutral-500 mt-2">Humanity Score</div>
       </div>
 
       <div className="space-y-4">
@@ -42,7 +42,7 @@ export function SuccessStep({
             href={explorerUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="block w-full px-6 py-3 bg-gray-800 text-white rounded-lg font-medium hover:bg-gray-700 transition-colors"
+            className="block w-full px-6 py-3 bg-surface-raised border border-surface-border text-white font-medium hover:border-neutral-500"
           >
             View Transaction
           </a>
@@ -50,13 +50,13 @@ export function SuccessStep({
 
         <button
           onClick={() => window.close()}
-          className="block w-full px-6 py-3 border border-gray-700 text-gray-300 rounded-lg font-medium hover:border-gray-500 transition-colors"
+          className="block w-full px-6 py-3 border border-surface-border text-neutral-400 font-medium hover:border-neutral-500 hover:text-white"
         >
           Close & Return to Agent
         </button>
       </div>
 
-      <p className="mt-8 text-sm text-gray-500">
+      <p className="mt-8 text-sm text-neutral-500">
         Your agent can now query the Validation Registry to confirm your score.
       </p>
     </div>

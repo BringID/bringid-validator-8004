@@ -26,13 +26,13 @@ export function VerifyStepper({ currentStep }: VerifyStepperProps) {
               <div className="flex items-center">
                 <div
                   className={`
-                    flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium
+                    flex items-center justify-center w-8 h-8 text-sm font-mono
                     ${
                       isCompleted
-                        ? "bg-green-500 text-white"
+                        ? "bg-accent text-black"
                         : isCurrent
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-800 text-gray-500"
+                        ? "bg-white text-black"
+                        : "bg-surface-raised border border-surface-border text-neutral-600"
                     }
                   `}
                 >
@@ -44,7 +44,7 @@ export function VerifyStepper({ currentStep }: VerifyStepperProps) {
                 </div>
                 <span
                   className={`ml-2 text-sm hidden md:inline ${
-                    isCurrent ? "text-white" : "text-gray-500"
+                    isCurrent ? "text-white" : "text-neutral-600"
                   }`}
                 >
                   {step.name}
@@ -52,8 +52,8 @@ export function VerifyStepper({ currentStep }: VerifyStepperProps) {
               </div>
               {index < steps.length - 1 && (
                 <div
-                  className={`w-8 md:w-12 h-0.5 mx-2 ${
-                    currentStep > step.id ? "bg-green-500" : "bg-gray-800"
+                  className={`w-8 md:w-12 h-px mx-2 ${
+                    currentStep > step.id ? "bg-accent" : "bg-surface-border"
                   }`}
                 />
               )}

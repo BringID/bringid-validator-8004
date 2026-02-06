@@ -50,7 +50,7 @@ export function OwnershipStep({
   return (
     <div className="text-center">
       <h2 className="text-2xl font-bold mb-4">Verifying Ownership</h2>
-      <p className="text-gray-400 mb-8">
+      <p className="text-neutral-400 mb-8">
         Checking that you own agent #{agentId.toString()}...
       </p>
 
@@ -61,9 +61,9 @@ export function OwnershipStep({
       )}
 
       {!isLoading && isOwner && (
-        <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
-          <p className="text-green-400">
-            Ownership verified! You own this agent.
+        <div className="p-4 bg-accent/10 border border-accent/30">
+          <p className="text-accent">
+            Ownership verified. You own this agent.
           </p>
         </div>
       )}
@@ -73,6 +73,6 @@ export function OwnershipStep({
 
 function Spinner() {
   return (
-    <div className="w-8 h-8 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+    <div className="w-8 h-8 border-4 border-accent/30 border-t-accent rounded-full animate-spin" />
   );
 }

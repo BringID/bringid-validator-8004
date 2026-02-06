@@ -73,7 +73,7 @@ export function VerifyStep({ agentId, chainId, onComplete, onError }: VerifyStep
   return (
     <div className="text-center">
       <h2 className="text-2xl font-bold mb-4">Verify Your Humanity</h2>
-      <p className="text-gray-400 mb-8">
+      <p className="text-neutral-400 mb-8">
         Click the button below to open BringID and verify your credentials.
         Each credential adds to your humanity score.
       </p>
@@ -81,7 +81,7 @@ export function VerifyStep({ agentId, chainId, onComplete, onError }: VerifyStep
       <button
         onClick={handleVerify}
         disabled={isVerifying || !isReady || !scope}
-        className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg font-medium hover:from-blue-400 hover:to-purple-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        className="px-6 py-3 bg-accent text-black font-medium hover:bg-yellow-300 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isVerifying ? (
           <span className="flex items-center gap-2">
@@ -95,13 +95,13 @@ export function VerifyStep({ agentId, chainId, onComplete, onError }: VerifyStep
         )}
       </button>
 
-      <p className="mt-6 text-sm text-gray-500">
+      <p className="mt-6 text-sm text-neutral-500">
         Available credentials: X, GitHub, Farcaster, Binance KYC, Apple,
         zkPassport, Self
       </p>
 
       {isVerifying && (
-        <p className="mt-4 text-sm text-gray-400">
+        <p className="mt-4 text-sm text-neutral-400">
           Complete verification in the BringID modal and return here.
         </p>
       )}
@@ -111,6 +111,6 @@ export function VerifyStep({ agentId, chainId, onComplete, onError }: VerifyStep
 
 function Spinner() {
   return (
-    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+    <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
   );
 }

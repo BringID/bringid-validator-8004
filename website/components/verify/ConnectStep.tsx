@@ -24,7 +24,7 @@ export function ConnectStep({ targetChainId, onComplete }: ConnectStepProps) {
   return (
     <div className="text-center">
       <h2 className="text-2xl font-bold mb-4">Connect Your Wallet</h2>
-      <p className="text-gray-400 mb-8">
+      <p className="text-neutral-400 mb-8">
         Connect the wallet that owns the agent you want to verify.
       </p>
 
@@ -33,14 +33,14 @@ export function ConnectStep({ targetChainId, onComplete }: ConnectStepProps) {
       </div>
 
       {isConnected && !isCorrectChain && (
-        <div className="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-          <p className="text-yellow-400 mb-4">
+        <div className="mt-6 p-4 bg-accent/10 border border-accent/30">
+          <p className="text-accent mb-4">
             Please switch to {targetChainId === 84532 ? "Base Sepolia" : "Base"}{" "}
             to continue.
           </p>
           <button
             onClick={() => switchChain?.({ chainId: targetChainId })}
-            className="px-4 py-2 bg-yellow-500 text-black rounded-lg font-medium hover:bg-yellow-400 transition-colors"
+            className="px-4 py-2 bg-accent text-black font-medium hover:bg-yellow-300"
           >
             Switch Network
           </button>
